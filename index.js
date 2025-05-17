@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const { Client, middleware } = require('@line/bot-sdk');
 
+const { handleReply } = require('./services/replyService');
+const { logMessage } = require('./services/logger');
+
 const config = {
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
   channelSecret: process.env.CHANNEL_SECRET
@@ -12,25 +15,28 @@ const app = express();
 
 app.post('/webhook', middleware(config), async (req, res) => {
   const events = req.body.events;
-  const results = await Promise.all(events.map(event => {
-    if (event.type === 'message' && event.message.type === 'text') {
-      return client.replyMessage(event.replyToken, {
-        type: 'text',
-        text: `あなたの入力：「${event.message.text}」`
-      });
-    }
-  }));
-  res.json(results);
+
+  try {
+    const results = await Promise.all(events.map(async event => {
+      // メッセージログをFirestoreに保存（メッセージイベントのみ対象）
+      if (event.type === 'message' && event.message.type === 'text') {
+        const userId = event.source?.userId || 'unknown';
+        const message = event.message.text;
+        await logMessage(userId, message);
+      }
+
+      // クイックリプライなどの応答処理
+      return handleReply(event, client);
+    }));
+
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('エラーが発生しました:', err);
+    res.status(500).end();
+  }
 });
-
-const { handleReply } = require('./services/replyService');
-
-app.post('/webhook', middleware(config), async (req, res) => {
-  const events = req.body.events;
-  const results = await Promise.all(events.map(event => handleReply(event, client)));
-  res.json(results);
-});
-
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 LINE Bot server running on port ${PORT}`);
+});
