@@ -23,5 +23,14 @@ app.post('/webhook', middleware(config), async (req, res) => {
   res.json(results);
 });
 
+const { handleReply } = require('./services/replyService');
+
+app.post('/webhook', middleware(config), async (req, res) => {
+  const events = req.body.events;
+  const results = await Promise.all(events.map(event => handleReply(event, client)));
+  res.json(results);
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
