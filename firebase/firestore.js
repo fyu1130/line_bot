@@ -1,6 +1,5 @@
-// Firestore 初期化ファイル
 const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey');
+const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
