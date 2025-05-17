@@ -1,0 +1,25 @@
+{
+  "name": "line_bot",
+  "version": "1.0.0",
+  "description": "最初の流れ ① リポジトリをローカルにクローン ② Node.jsプロジェクト初期化（npm init） ③ 最低限のファイルと構成を作成 ④ git pushでdevelopブランチを反映 ⑤ LINE Messaging API接続（.env設定） ⑥ 動作確認用のBotコード実装 ⑦ develop → main にマージ → Vercelへデプロイ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fyu1130/line_bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fyu1130/line_bot/issues"
+  },
+  "homepage": "https://github.com/fyu1130/line_bot#readme",
+  "dependencies": {
+    "@line/bot-sdk": "^9.9.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0"
+  }
+}
