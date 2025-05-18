@@ -13,19 +13,16 @@ const config = {
 const client = new Client(config);
 const app = express();
 
-app.post('/webhook', middleware(config), async (req, res) => {
+app.post('/api/webhook', middleware(config), async (req, res) => {
   const events = req.body.events;
 
   try {
     const results = await Promise.all(events.map(async event => {
-      // メッセージログをFirestoreに保存（メッセージイベントのみ対象）
       if (event.type === 'message' && event.message.type === 'text') {
         const userId = event.source?.userId || 'unknown';
         const message = event.message.text;
         await logMessage(userId, message);
       }
-
-      // クイックリプライなどの応答処理
       return handleReply(event, client);
     }));
 
@@ -36,7 +33,5 @@ app.post('/webhook', middleware(config), async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 LINE Bot server running on port ${PORT}`);
-});
+// ⛔ listen は不要（Vercelでは自動実行）
+module.exports = app;
