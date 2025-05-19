@@ -11,7 +11,7 @@ const config = {
 const client = new Client(config);
 const app = express();
 
-app.post('/webhook', middleware(config), async (req, res) => {
+app.post('/', middleware(config), async (req, res) => {
   const events = req.body.events;
 
   try {
