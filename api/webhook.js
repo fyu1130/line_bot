@@ -11,40 +11,37 @@ const config = {
 const client = new Client(config);
 const app = express();
 
-app.post('/', middleware(config), async (req, res) => {
-    console.log('📩 Received POST to /');
-    console.log('📦 req.body:', JSON.stringify(req.body));
-  
-    const events = req.body?.events || [];
-  
-    try {
-      const results = await Promise.all(events.map(async event => {
-        try {
-          console.log('🧩 event:', event);
-  
-          if (event.type === 'message' && event.message.type === 'text') {
-            const userId = event.source?.userId || 'unknown';
-            const message = event.message.text;
-            await logMessage(userId, message);
-          }
-  
-          return handleReply(event, client);
-        } catch (innerError) {
-          console.error('[Event Handling Error]', innerError);
-          return client.replyMessage(event.replyToken, {
-            type: 'text',
-            text: 'システムエラーが発生しました。'
-          });
-        }
-      }));
-  
-      res.status(200).json(results);
-    } catch (err) {
-      console.error('[Webhook Error]', err);
-      res.status(500).end();
-    }
-  });
-  
+// 🔥 これがないと req.body が undefined
+app.use(express.json());
 
-// ✅ Vercel用：listenしない
+app.post('/', middleware(config), async (req, res) => {
+  console.log('✅ POST /webhook received');
+
+  const events = req.body.events || [];
+
+  try {
+    const results = await Promise.all(events.map(async event => {
+      try {
+        if (event.type === 'message' && event.message.type === 'text') {
+          const userId = event.source?.userId || 'unknown';
+          const message = event.message.text;
+          await logMessage(userId, message);
+        }
+        return handleReply(event, client);
+      } catch (innerError) {
+        console.error('[Event Handling Error]', innerError);
+        return client.replyMessage(event.replyToken, {
+          type: 'text',
+          text: 'システムエラーが発生しました。'
+        });
+      }
+    }));
+
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('[Webhook Error]', err);
+    res.status(500).end();
+  }
+});
+
 module.exports = app;
