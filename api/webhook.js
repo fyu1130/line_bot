@@ -1,9 +1,7 @@
-require('dotenv').config();
 const express = require('express');
 const { Client, middleware } = require('@line/bot-sdk');
-
-const { handleReply } = require('./services/replyService');
-const { logMessage } = require('./services/logger');
+const { handleReply } = require('../services/replyService');
+const { logMessage } = require('../services/logger');
 
 const config = {
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
@@ -18,20 +16,27 @@ app.post('/api/webhook', middleware(config), async (req, res) => {
 
   try {
     const results = await Promise.all(events.map(async event => {
-      if (event.type === 'message' && event.message.type === 'text') {
-        const userId = event.source?.userId || 'unknown';
-        const message = event.message.text;
-        await logMessage(userId, message);
+        try {
+            if (event.type === 'message' && event.message.type === 'text') {
+              const userId = event.source?.userId || 'unknown';
+              const message = event.message.text;
+              await logMessage(userId, message);
+            }
+            return handleReply(event, client);
+          } catch (innerError) {
+            console.error('[Event Handling Error]', innerError);
+            return client.replyMessage(event.replyToken, {
+              type: 'text',
+              text: 'システムエラーが発生しました。'
+            });
+          }
+        }));
+        res.status(200).json(results);
+      } catch (err) {
+        console.error('[Webhook Error]', err);
+        res.status(500).end();
       }
-      return handleReply(event, client);
-    }));
-
-    res.status(200).json(results);
-  } catch (err) {
-    console.error('エラーが発生しました:', err);
-    res.status(500).end();
-  }
 });
 
-// ⛔ listen は不要（Vercelでは自動実行）
+// ✅ Vercel用：listenしない
 module.exports = app;
