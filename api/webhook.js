@@ -1,9 +1,7 @@
-require('dotenv').config();
 const express = require('express');
 const { Client, middleware } = require('@line/bot-sdk');
-
-const { handleReply } = require('./services/replyService');
-const { logMessage } = require('./services/logger');
+const { handleReply } = require('../services/replyService');
+const { logMessage } = require('../services/logger');
 
 const config = {
   channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
@@ -33,5 +31,5 @@ app.post('/api/webhook', middleware(config), async (req, res) => {
   }
 });
 
-// ⛔ listen は不要（Vercelでは自動実行）
+// ✅ Vercel用：listenしない
 module.exports = app;
