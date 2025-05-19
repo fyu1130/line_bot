@@ -7,5 +7,5 @@ admin.initializeApp({
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL
   })
 });
-
+console.log('[DEBUG] FIREBASE_PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY);
 module.exports = admin.firestore();
